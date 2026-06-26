@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Malaysia Today — AI News Digest</title>
+    <meta name="description" content="AI-curated Malaysian news digest, powered by Llama 3.1." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0e0e0e;
+            --surface: #161616;
+            --border: #2a2a2a;
+            --accent: #d4a853;
+            --accent-dim: #9a7a3a;
+            --text: #e8e4dc;
+            --muted: #7a7570;
+            --tag-bg: #1e1e1e;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-weight: 300;
+            min-height: 100vh;
+        }
+
+        /* ── Masthead ── */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 28px 40px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .masthead-left {
+            flex: 1;
+        }
+
+        .masthead-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .masthead-title span {
+            color: var(--accent);
+        }
+
+        .masthead-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #c0392b;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 1.8s ease-in-out infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(0.75);
+            }
+        }
+
+        /* ── Top nav ── */
+        .topnav {
+            background: #080808;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 0 40px;
+            height: 38px;
+        }
+
+        .topnav a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--muted);
+            padding: 0 16px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border-right: 1px solid var(--border);
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .topnav a:first-child {
+            border-left: 1px solid var(--border);
+        }
+
+        .topnav a:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .topnav a.active {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* ── Refresh button ── */
+        .refresh-form {
+            display: flex;
+            align-items: center;
+        }
+
+        .refresh-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .refresh-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent-dim);
+        }
+
+        .refresh-btn:active {
+            opacity: 0.6;
+        }
+
+        /* ── Layout ── */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 24px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Category blocks ── */
+        .category-block {
+            margin-bottom: 48px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stagger up to 20 categories — JS handles beyond that */
+        .category-block:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .category-block:nth-child(2) {
+            animation-delay: 0.10s;
+        }
+
+        .category-block:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        .category-block:nth-child(4) {
+            animation-delay: 0.20s;
+        }
+
+        .category-block:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+
+        .category-block:nth-child(6) {
+            animation-delay: 0.30s;
+        }
+
+        .category-block:nth-child(7) {
+            animation-delay: 0.35s;
+        }
+
+        .category-block:nth-child(8) {
+            animation-delay: 0.40s;
+        }
+
+        .category-block:nth-child(9) {
+            animation-delay: 0.45s;
+        }
+
+        .category-block:nth-child(10) {
+            animation-delay: 0.50s;
+        }
+
+        .category-block:nth-child(11) {
+            animation-delay: 0.55s;
+        }
+
+        .category-block:nth-child(12) {
+            animation-delay: 0.60s;
+        }
+
+        .category-block:nth-child(13) {
+            animation-delay: 0.65s;
+        }
+
+        .category-block:nth-child(14) {
+            animation-delay: 0.70s;
+        }
+
+        .category-block:nth-child(15) {
+            animation-delay: 0.75s;
+        }
+
+        .category-block:nth-child(16) {
+            animation-delay: 0.80s;
+        }
+
+        .category-block:nth-child(17) {
+            animation-delay: 0.85s;
+        }
+
+        .category-block:nth-child(18) {
+            animation-delay: 0.90s;
+        }
+
+        .category-block:nth-child(19) {
+            animation-delay: 0.95s;
+        }
+
+        .category-block:nth-child(20) {
+            animation-delay: 1.00s;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .category-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .category-name {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--text);
+        }
+
+        .category-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--accent);
+            background: rgba(212, 168, 83, 0.1);
+            border: 1px solid rgba(212, 168, 83, 0.25);
+            padding: 3px 8px;
+            border-radius: 3px;
+            letter-spacing: 0.05em;
+        }
+
+        .toggle-arrow {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--muted);
+            transition: transform 0.25s ease;
+        }
+
+        .category-header.open .toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* ── Article grid ── */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.5s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        /* max-height set dynamically by JS to avoid clipping large categories */
+        .articles-grid.open {
+            opacity: 1;
+        }
+
+        .article-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 18px 20px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .article-card:hover {
+            border-color: var(--accent-dim);
+            transform: translateY(-2px);
+        }
+
+        .article-title {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--text);
+            text-decoration: none;
+            margin-bottom: 14px;
+        }
+
+        .article-title:hover {
+            color: var(--accent);
+        }
+
+        .article-summary {
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: #a09a93;
+            white-space: pre-wrap;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            font-family: 'Source Serif 4', serif;
+            font-style: italic;
+        }
+
+        .article-footer {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .source-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--muted);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            background: var(--tag-bg);
+            border: 1px solid var(--border);
+            padding: 2px 7px;
+            border-radius: 3px;
+        }
+
+        .read-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--accent);
+            text-decoration: none;
+            letter-spacing: 0.06em;
+            margin-left: auto;
+        }
+
+        .read-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Empty state ── */
+        .empty {
+            text-align: center;
+            padding: 80px 0;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* ── Chat panel ── */
+        .chat-btn {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 52px;
+            height: 52px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            transition: transform 0.2s;
+        }
+
+        .chat-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .chat-panel {
+            position: fixed;
+            bottom: 92px;
+            right: 28px;
+            width: 360px;
+            max-height: 520px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            z-index: 99;
+            transform: scale(0.95) translateY(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .chat-panel.open {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chat-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header span {
+            color: var(--accent);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 200px;
+        }
+
+        .msg {
+            max-width: 90%;
+            padding: 10px 13px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .msg-user {
+            background: rgba(212, 168, 83, 0.15);
+            border: 1px solid rgba(212, 168, 83, 0.25);
+            color: var(--text);
+            align-self: flex-end;
+        }
+
+        .msg-agent {
+            background: #1e1e1e;
+            border: 1px solid var(--border);
+            color: #c8c2ba;
+            align-self: flex-start;
+        }
+
+        .msg-thinking {
+            color: var(--muted);
+            font-style: italic;
+            font-size: 0.75rem;
+            align-self: flex-start;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: #111;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.8rem;
+            padding: 8px 10px;
+            resize: none;
+            height: 36px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent-dim);
+        }
+
+        .chat-send {
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: #1a1100;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0 14px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .chat-send:hover {
+            opacity: 0.85;
+        }
+
+        .chat-send:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ── Top navigation ── -->
+    <nav class="topnav">
+        <a href="/" class="active">🇲🇾 Malaysia</a>
+        <a href="/global">🌐 Global</a>
+    </nav>
+
+    <header>
+        <div class="masthead-left">
+            <div class="masthead-title">Malaysia<span>Today</span></div>
+            <div class="masthead-meta">
+                <span class="live-dot"></span>AI-Curated · Powered by Llama 3.1
+            </div>
+        </div>
+
+        <form class="refresh-form" action="/refresh" method="post">
+            <button class="refresh-btn" type="submit">↻ Refresh</button>
+        </form>
+    </header>
+
+    <main>
+        <div class="section-label">
+            Today's Digest — {{ total }} article{{ 's' if total != 1 else '' }} · {{ categories | length }} categor{{
+            'ies' if categories | length != 1 else 'y' }}
+        </div>
+
+        {% if categories %}
+        {% for cat in categories %}
+        <div class="category-block">
+
+            <div class="category-header" onclick="toggleCategory(this)">
+                <span class="category-icon">{{ cat.icon }}</span>
+                <span class="category-name">{{ cat.name }}</span>
+                <span class="category-count">{{ cat.count }} article{{ 's' if cat.count != 1 else '' }}</span>
+                <span class="toggle-arrow">▼</span>
+            </div>
+
+            <div class="articles-grid">
+                {% for article in cat.articles %}
+                <div class="article-card">
+                    <a class="article-title" href="{{ article.url }}" target="_blank" rel="noopener">
+                        {{ article.title }}
+                    </a>
+                    <div class="article-summary">{{ article.summary }}</div>
+                    <div class="article-footer">
+                        <span class="source-tag">{{ cat.name }}</span>
+                        {% if article.published %}
+                        <span class="source-tag">{{ article.published }}</span>
+                        {% endif %}
+                        <a class="read-link" href="{{ article.url }}" target="_blank" rel="noopener">Read →</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div class="empty">No articles found. Try again later.</div>
+        {% endif %}
+    </main>
+
+
+    <!-- ── Chat panel ── -->
+    <button class="chat-btn" onclick="toggleChat()" title="Ask about today's news">💬</button>
+
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">Ask about <span>today's news</span></div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="msg msg-agent">Hi! Ask me anything about today's Malaysian news — I can summarise, search, or
+                explain what's happening.</div>
+        </div>
+        <div class="chat-input-row">
+            <textarea class="chat-input" id="chatInput" placeholder="What's the biggest story today?" rows="1"
+                onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+            <button class="chat-send" id="chatSend" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Auto-open the first category on load
+        document.addEventListener("DOMContentLoaded", () => {
+            const first = document.querySelector(".category-header");
+            if (first) openCategory(first);
+        });
+
+        function openCategory(header) {
+            const grid = header.nextElementSibling;
+            header.classList.add("open");
+            // Set max-height to actual scroll height so large categories aren't clipped
+            grid.style.maxHeight = grid.scrollHeight + "px";
+            grid.classList.add("open");
+        }
+
+        function toggleCategory(header) {
+            const grid = header.nextElementSibling;
+            const isOpen = header.classList.toggle("open");
+            if (isOpen) {
+                grid.style.maxHeight = grid.scrollHeight + "px";
+                grid.classList.add("open");
+            } else {
+                grid.style.maxHeight = "0";
+                grid.classList.remove("open");
+            }
+        }
+
+        // ── Chat panel ──
+        function toggleChat() {
+            document.getElementById('chatPanel').classList.toggle('open');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const messages = document.getElementById('chatMessages');
+            const sendBtn = document.getElementById('chatSend');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // User bubble
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg msg-user';
+            userMsg.textContent = text;
+            messages.appendChild(userMsg);
+
+            // Thinking indicator
+            const thinking = document.createElement('div');
+            thinking.className = 'msg msg-thinking';
+            thinking.textContent = 'Thinking…';
+            messages.appendChild(thinking);
+
+            input.value = '';
+            sendBtn.disabled = true;
+            messages.scrollTop = messages.scrollHeight;
+
+            try {
+                const res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, region: "MY" })
+                });
+                const data = await res.json();
+                thinking.remove();
+
+                const agentMsg = document.createElement('div');
+                agentMsg.className = 'msg msg-agent';
+                agentMsg.textContent = data.answer || 'Sorry, I could not find an answer.';
+                messages.appendChild(agentMsg);
+            } catch (err) {
+                thinking.remove();
+                const errMsg = document.createElement('div');
+                errMsg.className = 'msg msg-agent';
+                errMsg.textContent = 'Connection error — is the server running?';
+                messages.appendChild(errMsg);
+            }
+
+            sendBtn.disabled = false;
+            messages.scrollTop = messages.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

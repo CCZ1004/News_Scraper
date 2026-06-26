@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} — Loading</title>
+    <meta name="description" content="Fetching and analysing today's news with AI." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg:         #0e0e0e;
+            --surface:    #161616;
+            --border:     #2a2a2a;
+            --accent:     #d4a853;
+            --accent-dim: #9a7a3a;
+            --text:       #e8e4dc;
+            --muted:      #7a7570;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-weight: 300;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Top nav ── */
+        .topnav {
+            background: #080808;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            height: 38px;
+        }
+
+        .topnav a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--muted);
+            padding: 0 16px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            border-right: 1px solid var(--border);
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .topnav a:first-child { border-left: 1px solid var(--border); }
+        .topnav a:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+        .topnav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+        /* ── Masthead ── */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 28px 40px 20px;
+        }
+
+        .masthead-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .masthead-title span { color: var(--accent); }
+
+        .masthead-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        /* ── Loading stage ── */
+        .loading-stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 24px;
+            gap: 40px;
+        }
+
+        /* Spinning newspaper press ring */
+        .press-ring {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .press-ring svg {
+            width: 100%;
+            height: 100%;
+            animation: spin 2.4s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .press-ring .inner-icon {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: breathe 2.4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.6; transform: scale(0.85); }
+        }
+
+        /* Headline log */
+        .status-block {
+            text-align: center;
+            max-width: 480px;
+        }
+
+        .status-main {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.01em;
+            margin-bottom: 10px;
+        }
+
+        .status-sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* Typewriter phase messages */
+        .phase-log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--accent);
+            letter-spacing: 0.07em;
+            min-height: 1.2em;
+            text-align: center;
+        }
+
+        .phase-log::after {
+            content: '▋';
+            display: inline-block;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0; }
+        }
+
+        /* Progress ticker bar */
+        .ticker-wrap {
+            width: 320px;
+            max-width: 90vw;
+        }
+
+        .ticker-bar {
+            height: 2px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .ticker-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.8s ease;
+            animation: indeterminate 2s ease-in-out infinite;
+        }
+
+        @keyframes indeterminate {
+            0%   { transform: translateX(-100%) scaleX(0.4); }
+            50%  { transform: translateX(0%)    scaleX(0.6); }
+            100% { transform: translateX(200%)  scaleX(0.4); }
+        }
+
+        .ticker-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        /* Error state */
+        .error-msg {
+            display: none;
+            background: rgba(192, 57, 43, 0.12);
+            border: 1px solid rgba(192, 57, 43, 0.3);
+            border-radius: 6px;
+            padding: 14px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: #e07060;
+            text-align: center;
+            max-width: 420px;
+        }
+
+        /* Fade-out for transition */
+        body.fading {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="topnav">
+        <a href="/"    {% if region == 'MY'     %}class="active"{% endif %}>🇲🇾 Malaysia</a>
+        <a href="/global" {% if region == 'GLOBAL' %}class="active"{% endif %}>🌐 Global</a>
+    </nav>
+
+    <header>
+        <div class="masthead-title">
+            {% if region == 'GLOBAL' %}
+                Global<span>News</span>
+            {% else %}
+                Malaysia<span>Today</span>
+            {% endif %}
+        </div>
+        <div class="masthead-meta">AI-Curated · Powered by Llama 3.1</div>
+    </header>
+
+    <div class="loading-stage">
+
+        <!-- Animated spinner -->
+        <div class="press-ring">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="44" stroke="#2a2a2a" stroke-width="4" />
+                <circle cx="50" cy="50" r="44"
+                    stroke="url(#grad)" stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-dasharray="200 76"
+                    stroke-dashoffset="0" />
+                <defs>
+                    <linearGradient id="grad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%"   stop-color="#9a7a3a" />
+                        <stop offset="100%" stop-color="#d4a853" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <div class="inner-icon">📰</div>
+        </div>
+
+        <!-- Status text -->
+        <div class="status-block">
+            <div class="status-main">{{ subtitle }}</div>
+            <div class="status-sub">AI analysis in progress</div>
+        </div>
+
+        <!-- Rotating phase messages -->
+        <div class="phase-log" id="phaseLog">Connecting to news feeds</div>
+
+        <!-- Progress bar -->
+        <div class="ticker-wrap">
+            <div class="ticker-bar">
+                <div class="ticker-fill" id="tickerFill"></div>
+            </div>
+            <div class="ticker-label" id="tickerLabel">Fetching articles…</div>
+        </div>
+
+        <!-- Error state -->
+        <div class="error-msg" id="errorMsg">
+            ⚠ Something went wrong fetching the news. <br>
+            <a href="{{ request.path }}" style="color:var(--accent);text-decoration:none;">Try again →</a>
+        </div>
+
+    </div>
+
+    <script>
+        const REGION    = "{{ region }}";
+        const DEST_URL  = REGION === "GLOBAL" ? "/global/news" : "/news";
+        const POLL_MS   = 2000;
+
+        const phases = [
+            "Connecting to news feeds",
+            "Resolving article URLs",
+            "Extracting article text",
+            "Running LLM analysis",
+            "Classifying categories",
+            "Summarising key points",
+            "Almost ready…",
+        ];
+
+        let phaseIdx = 0;
+        const phaseEl  = document.getElementById("phaseLog");
+        const errorEl  = document.getElementById("errorMsg");
+        const labelEl  = document.getElementById("tickerLabel");
+
+        // Rotate phase messages every ~4 s
+        const phaseTimer = setInterval(() => {
+            phaseIdx = (phaseIdx + 1) % phases.length;
+            phaseEl.textContent = phases[phaseIdx];
+        }, 4000);
+
+        async function poll() {
+            try {
+                const res  = await fetch(`/api/news/status?region=${REGION}`);
+                const data = await res.json();
+
+                if (data.status === "done") {
+                    clearInterval(phaseTimer);
+                    phaseEl.textContent   = "Complete — loading results";
+                    labelEl.textContent   = "Done";
+                    document.body.classList.add("fading");
+                    setTimeout(() => { window.location.href = DEST_URL; }, 420);
+                    return;
+                }
+
+                if (data.status === "error") {
+                    clearInterval(phaseTimer);
+                    phaseEl.textContent        = "Fetch failed";
+                    errorEl.style.display      = "block";
+                    labelEl.textContent        = "Error";
+                    return;
+                }
+
+                // Still loading — schedule next poll
+                setTimeout(poll, POLL_MS);
+
+            } catch (err) {
+                // Network error — retry after a longer wait
+                setTimeout(poll, POLL_MS * 2);
+            }
+        }
+
+        // Kick off polling after a short initial delay
+        setTimeout(poll, 800);
+    </script>
+</body>
+
+</html>
