@@ -1,0 +1,11 @@
+# Malaysia Today — AI News Aggregator
+# Python 3.11+
+#
+# Install:  pip install -r requirements.txt
+# Ollama:   https://ollama.com  →  ollama pull llama3.2
+#           (or ollama pull llama3.1:8b for better agent quality)
+
+flask>=3.0,<4.0
+feedparser>=6.0,<7.0
+requests>=2.31,<3.0
+trafilatura>=1.9,<2.0
