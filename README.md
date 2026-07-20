@@ -9,13 +9,13 @@ Fetches today's news from Google News RSS, classifies and summarises each articl
 ## Screenshots
 
 ### Malaysia Feed
-![Malaysia news feed showing Business category with article cards and AI summaries](MY_news.png)
+![Malaysia news feed showing Business category with article cards and AI summaries](docs/MY_news.png)
 
 ### Global Feed
-![Global news feed showing Foreign Affairs category with international articles](GB_news.png)
+![Global news feed showing Foreign Affairs category with international articles](docs/GB_news.png)
 
 ### AI Chat Agent
-![Chat panel showing a question about today's business news with a structured answer](chat.png)
+![Chat panel showing a question about today's business news with a structured answer](docs/chat.png)
 
 ---
 
